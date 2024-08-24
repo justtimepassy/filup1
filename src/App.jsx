@@ -1,19 +1,60 @@
-import { useState, useEffect } from 'react';
-
+import { useState } from 'react';
+import './App.css';
+import supabase from './supabase';
+import Load from './Load';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [file, setFile] = useState(null);
+
+  
+ 
+  const upload = async() => {
+    if(file){
+   
+      const filename = Math.round(Math.random()*1000000000)
+      console.log(filename)
+      
+      const { data, error } = await supabase
+        .storage
+        .from('pdfs')
+        .upload(filename+'.pdf', file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+      
+      if(error){
+        console.log(error)
+      }
+      else{
+        
+
+        const path = 'https://hwnkucfptcbnpbmbmtec.supabase.co/storage/v1/object/public/pdfs/'+filename+'.pdf'
+
+        await supabase.from('Files').insert({file_url : path}).then(()=>console.log('Done'))
+
+      }
+
+
+    }
+  };
 
   return (
     <>
-      <div className='app'>
-        <h4>Upload Notes</h4>
-        <input type="text" />
+      {/* <div>
+        <h1>Upload Notes</h1>
+        <input
+          type="file"
+          accept=".pdf"
+          onChange={e=>setFile(e.target.files[0])}
+        />
+        <button onClick={upload}>Upload</button>
 
+        
+      </div> */}
 
-        </div>
+      <Load></Load>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
